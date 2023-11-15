@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aerx.Serilog.Sinks.Loki", "src\Aerx.Serilog.Sinks.Loki\Aerx.Serilog.Sinks.Loki.csproj", "{95D54780-F8FE-474F-9F0F-E9F3EACC37CA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2581886A-B82A-4A7E-87F7-4C6142027935}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{3D002AFF-3E9B-4543-8FD2-1609774F0057}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{800D402A-2E6A-4DE7-ACC9-200C9FFA837C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aerx.Serilog.Sinks.Loki.Tests", "tests\Aerx.Serilog.Sinks.Loki.Tests\Aerx.Serilog.Sinks.Loki.Tests.csproj", "{8C6DE8A2-DE63-4894-B020-759901E87A98}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "loadtests", "loadtests", "{48ECF9E7-3FB7-4C94-BBF5-C704E451879A}"
+	ProjectSection(SolutionItems) = preProject
+		loadtests\query_load.js = loadtests\query_load.js
+		loadtests\README.md = loadtests\README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{95D54780-F8FE-474F-9F0F-E9F3EACC37CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95D54780-F8FE-474F-9F0F-E9F3EACC37CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95D54780-F8FE-474F-9F0F-E9F3EACC37CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95D54780-F8FE-474F-9F0F-E9F3EACC37CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C6DE8A2-DE63-4894-B020-759901E87A98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C6DE8A2-DE63-4894-B020-759901E87A98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C6DE8A2-DE63-4894-B020-759901E87A98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C6DE8A2-DE63-4894-B020-759901E87A98}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{95D54780-F8FE-474F-9F0F-E9F3EACC37CA} = {2581886A-B82A-4A7E-87F7-4C6142027935}
+		{8C6DE8A2-DE63-4894-B020-759901E87A98} = {800D402A-2E6A-4DE7-ACC9-200C9FFA837C}
+	EndGlobalSection
+EndGlobal
