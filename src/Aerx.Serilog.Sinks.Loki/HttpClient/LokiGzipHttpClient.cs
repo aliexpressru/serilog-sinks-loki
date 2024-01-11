@@ -7,7 +7,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace Aerx.Serilog.Sinks.Loki.HttpClient;
 
-internal class LokiGzipHttpClient : ILokiHttpClient
+public class LokiGzipHttpClient : ILokiHttpClient
 {
     private static readonly MediaTypeHeaderValue ContentType = MediaTypeHeaderValue.Parse(Constants.JsonContentType);
     private static readonly JsonSerializerSettings CamelCase = new()
