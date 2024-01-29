@@ -27,7 +27,7 @@ internal class LokiSink : ILogEventSink
         ITextFormatter textFormatter,
         ILokiBatchFormatter batchFormatter,
         LokiHttpClientPooledObjectPolicy pooledObjectPolicy, 
-        IMetricService metricService)
+        IMeterService meterService)
     {
         var pool = new DefaultObjectPoolProvider
         {
@@ -60,7 +60,7 @@ internal class LokiSink : ILogEventSink
                 }
                 catch (Exception e)
                 {
-                    metricService.ObserveOnLogsWriteFail(messages.Length);
+                    meterService.ObserveOnLogsWriteFail(messages.Length);
                     SelfLog.WriteLine($"Transformation block exception: {e}");
                     return new LokiBatch();
                 }
@@ -93,13 +93,13 @@ internal class LokiSink : ILogEventSink
                         }
                         else
                         {
-                            metricService.ObserveOnLogsWriteSuccess(batchSize);
-                            metricService.ObserveOnLogsBatchSize(result.ContentSizeInKb);
+                            meterService.ObserveOnLogsWriteSuccess(batchSize);
+                            meterService.ObserveOnLogsBatchSize(result.ContentSizeInKb);
                         }
                     }
                     catch (Exception)
                     {
-                        metricService.ObserveOnLogsWriteFail(batchSize);
+                        meterService.ObserveOnLogsWriteFail(batchSize);
                     }
                     finally
                     {

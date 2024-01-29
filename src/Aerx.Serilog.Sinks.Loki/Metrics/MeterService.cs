@@ -1,36 +1,40 @@
+using System.Diagnostics.Metrics;
 using Aerx.Serilog.Sinks.Loki.Options;
 using Microsoft.Extensions.Options;
-using Prometheus.Client;
 
 namespace Aerx.Serilog.Sinks.Loki.Metrics;
 
-internal class MetricService: IMetricService
+internal class MeterService: IMeterService
 {
-    private readonly IMetricFamily<ICounter> _logsWriteFailCounter;
-    private readonly IMetricFamily<ICounter> _logsWriteSuccessCounter;
-    private readonly IMetricFamily<ICounter> _logsBatchSizeCounter;
+    public static readonly string MeterName = typeof(MeterService).FullName;
+
+    private readonly Counter<long> _logsWriteFailCounter;
+    private readonly Counter<long> _logsWriteSuccessCounter;
+    private readonly Counter<double> _logsBatchSizeCounter;
+    private readonly KeyValuePair<string, object>[] _labels;
+    
     private readonly IOptions<LokiOptions> _lokiOptions;
 
-    public MetricService(IMetricFactory metricFactory, IOptions<LokiOptions> lokiOptions)
+    public MeterService(IMeterFactory meterFactory, IOptions<LokiOptions> lokiOptions)
     {
         _lokiOptions = lokiOptions;
 
         if (_lokiOptions.Value.EnableMetrics)
         {
-            _logsWriteFailCounter = metricFactory.CreateCounter(
+            _labels = new []{ new KeyValuePair<string, object>("app_name", lokiOptions.Value.AppName) };
+            var meter = meterFactory.Create(MeterName);
+
+            _logsWriteFailCounter = meter.CreateCounter<long>(
                 name: _lokiOptions.Value.Metrics?.LogsWriteFailCounterName ?? "logs_write_fail_counter",
-                help: "",
-                labelNames: new[] { "app_name" });
+                description: string.Empty);
 
-            _logsWriteSuccessCounter = metricFactory.CreateCounter(
+            _logsWriteSuccessCounter = meter.CreateCounter<long>(
                 _lokiOptions.Value.Metrics?.LogsWriteSuccessCounterName ?? "logs_write_success_counter",
-                "",
-                labelNames: new[] { "app_name" });
+                description: string.Empty);
 
-            _logsBatchSizeCounter = metricFactory.CreateCounter(
+            _logsBatchSizeCounter = meter.CreateCounter<double>(
                 _lokiOptions.Value.Metrics?.LogsSizeKbCounterName ?? "logs_size_kb_counter",
-                "",
-                labelNames: new[] { "app_name" });
+                description: string.Empty);
         }
     }
 
@@ -39,8 +43,7 @@ internal class MetricService: IMetricService
         if (_lokiOptions.Value.EnableMetrics)
         {
             _logsWriteFailCounter
-                .WithLabels(_lokiOptions.Value.AppName)
-                .Inc(failLogsCount);
+                .Add(failLogsCount, _labels);
         }
     }
     
@@ -49,8 +52,7 @@ internal class MetricService: IMetricService
         if (_lokiOptions.Value.EnableMetrics)
         {
             _logsWriteSuccessCounter
-                .WithLabels(_lokiOptions.Value.AppName)
-                .Inc(successLogsCount);
+                .Add(successLogsCount, _labels);
         }
     }
     
@@ -59,8 +61,7 @@ internal class MetricService: IMetricService
         if (_lokiOptions.Value.EnableMetrics)
         {
             _logsBatchSizeCounter
-                .WithLabels(_lokiOptions.Value.AppName)
-                .Inc(kbSize);
+                .Add(kbSize, _labels);
         }
     }
 }

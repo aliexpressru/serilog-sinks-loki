@@ -3,9 +3,13 @@ using System.Text.Json;
 using Aerx.Serilog.Sinks.Loki.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using WebApi;
 using WebApi.Models;
 
@@ -17,6 +21,15 @@ builder.Services.AddDirectToLokiLogging(builder.Configuration, c =>
     c.Timeout = TimeSpan.FromSeconds(5);
 });
 
+builder.Services.AddMetrics();
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(b =>
+    {
+        b.AddPrometheusExporter(options => options.ScrapeEndpointPath = "/metrics")
+            .AddDirectLokiLoggingMeter();
+    });
+
+builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IStartupFilter, MetricsStartup>());
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 

@@ -30,13 +30,13 @@ public class UnitTests
         });
         
         services.AddSingleton<IConfiguration>(configuration);
-        services.AddMock<IMetricService>();
+        services.AddMock<IMeterService>();
         services.AddMock<ILokiHttpClient>();
 
         var sp = services.BuildServiceProvider();
         
         var client = sp.GetRequiredService<Mock<ILokiHttpClient>>();
-        var metricService = sp.GetRequiredService<Mock<IMetricService>>();
+        var metricService = sp.GetRequiredService<Mock<IMeterService>>();
         
         client.Setup(x => x.Push(It.IsAny<LokiBatch>()))
             .ReturnsAsync(new LokiPushResponse
@@ -88,7 +88,7 @@ public class UnitTests
         var sp = Init();
 
         var lokiSink = sp.GetRequiredService<LokiSink>();
-        var metricService = sp.GetRequiredService<Mock<IMetricService>>();
+        var meterService = sp.GetRequiredService<Mock<IMeterService>>();
 
         for (var j = 1; j <= 1_000; j++)
         {
@@ -113,8 +113,8 @@ public class UnitTests
         
         await Task.Delay(200);
         
-        metricService.Verify(m => m.ObserveOnLogsBatchSize(It.IsAny<double>()), times: Times.Exactly(500));
-        metricService.Verify(m => m.ObserveOnLogsWriteSuccess(It.IsAny<int>()), times: Times.Exactly(500));
+        meterService.Verify(m => m.ObserveOnLogsBatchSize(It.IsAny<double>()), times: Times.Exactly(500));
+        meterService.Verify(m => m.ObserveOnLogsWriteSuccess(It.IsAny<int>()), times: Times.Exactly(500));
     }
 
     [TestMethod]

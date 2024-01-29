@@ -28,12 +28,6 @@ public class LokiOptions
 
     public class MetricsOptions
     {
-        public string MapPath { get; set; }
-        
-        public int? Port { get; set; }
-        
-        public bool UseDefaultCollectors { get; set; }
-        
         public string LogsWriteFailCounterName { get; set; }
     
         public string LogsWriteSuccessCounterName { get; set; }

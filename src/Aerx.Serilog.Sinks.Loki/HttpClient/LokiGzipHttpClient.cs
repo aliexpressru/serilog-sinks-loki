@@ -7,7 +7,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace Aerx.Serilog.Sinks.Loki.HttpClient;
 
-public class LokiGzipHttpClient : ILokiHttpClient
+public sealed class LokiGzipHttpClient : ILokiHttpClient
 {
     private static readonly MediaTypeHeaderValue ContentType = MediaTypeHeaderValue.Parse(Constants.JsonContentType);
     private static readonly JsonSerializerSettings CamelCase = new()
@@ -58,7 +58,7 @@ public class LokiGzipHttpClient : ILokiHttpClient
         return result;
     }
 
-    public virtual ILokiHttpClient SetTenantId(string tenantId)
+    public ILokiHttpClient SetTenantId(string tenantId)
     {
         if (string.IsNullOrEmpty(tenantId) || _httpClient.DefaultRequestHeaders.Contains(Constants.TenantIdHeader))
         {

@@ -4,15 +4,13 @@ using Aerx.Serilog.Sinks.Loki.Interfaces;
 using Aerx.Serilog.Sinks.Loki.Logger;
 using Aerx.Serilog.Sinks.Loki.Metrics;
 using Aerx.Serilog.Sinks.Loki.Options;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Prometheus.Client;
-using Prometheus.Client.Collectors;
+using OpenTelemetry.Metrics;
 using Serilog.Formatting;
 using Serilog.Formatting.Json;
 
@@ -82,22 +80,18 @@ public static class DependencyInjection
         services.TryAddSingleton<LokiHttpClientPooledObjectPolicy>();
         services.TryAddSingleton<LokiSink>();
         services.TryAddSingleton<ILoggerProvider, DirectLogToLokiLoggerProvider>();
-
-        var registry = new CollectorRegistry();
-        var factory = new MetricFactory(registry);
-
-        services.TryAddSingleton<ICollectorRegistry>(registry);
-        services.TryAddSingleton<IMetricFactory>(factory);
-        services.TryAddSingleton<IMetricService, MetricService>();
-
-        var enableMetrics = configuration.GetValue<bool>($"{Constants.Loki}:{Constants.EnableMetrics}");
-        if (enableMetrics)
-        {
-            services.TryAddEnumerable(ServiceDescriptor.Transient<IStartupFilter, MetricsStartup>());
-        }
+        services.TryAddSingleton<IMeterService, MeterService>();
         
         return services;
     }
+    
+    /// <summary>
+    /// Add metrics for open telemetry
+    /// </summary>
+    /// <param name="builder">Meter provider from OpenTelemetry lib</param>
+    /// <returns></returns>
+    public static MeterProviderBuilder AddDirectLokiLoggingMeter(this MeterProviderBuilder builder) => 
+        builder.AddMeter(MeterService.MeterName);
     
     /// <summary>
     /// Add direct to loki logging

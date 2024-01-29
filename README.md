@@ -32,9 +32,6 @@ There is a full description of section that is needed in appsettings.json.
          },
          "EnableMetrics": true,
          "Metrics": {
-            "MapPath": "/metrics",
-            "Port": 82,
-            "UseDefaultCollectors": false,
             "LogsWriteFailCounterName": "logs_write_fail_counter",
             "LogsWriteSuccessCounterName": "logs_write_success_counter",
             "LogsSizeKbCounterName": "logs_size_kb_counter"
@@ -107,11 +104,9 @@ There is a full description of section that is needed in appsettings.json.
 ---
 
 If you need to enable metrics provide the additional section.
+You already need to add OpenTelemetry nuget packages and register services in Startup.cs.
 - `EnableMetrics` (default = false) - if `true` turn on metrics exporting
 - `Metrics` - could be fulfilled if `EnableMetrics: true`
-- `MapPath` (default = "/metrics") - endpoint for exporting metrics
-- `Port` (default = null) - port for exporting metrics
-- `UseDefaultCollectors` (default = false) - if `true` use default Prometheus collectors in addition
 - `LogsWriteFailCounterName` (default = 'logs_write_fail_counter') - metric counter name for exporting (broken logs)
 - `LogsWriteSuccessCounterName` (default = 'logs_write_success_counter') - metric counter name for exporting (correct logs)
 - `LogsSizeKbCounterName` (default = 'logs_size_kb_counter') - metric counter name for exporting (correct logs size in kb)
@@ -156,9 +151,19 @@ services.AddDirectToLokiLogging(configuration, c =>
    c.BaseAddress = new Uri("http://loki.net:3100"));
 ```
 
-3) `Optional`: if it is needed to skip logs in your RequestResponseLoggingMiddleware use
+3) `Optional (1)`: if it is needed to skip logs in your RequestResponseLoggingMiddleware use
 `RequestResponseLoggingFilter(httpContext)` method like an aid in determining which logs should be skipped.
 
+4) `Optional (2)` if you need to export logs metrics, you should add 
+```
+services.AddOpenTelemetry()
+   .WithMetrics(builder => builder
+        .AddPrometheusExporter(...)
+        .AddDirectLokiLoggingMeter();
+   );
+   ```
+in startup.cs file.
+   
    
 
 ## Usage

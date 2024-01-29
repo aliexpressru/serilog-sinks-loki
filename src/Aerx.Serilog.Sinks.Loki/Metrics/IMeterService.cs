@@ -1,6 +1,6 @@
 namespace Aerx.Serilog.Sinks.Loki.Metrics;
 
-public interface IMetricService
+public interface IMeterService
 {
     void ObserveOnLogsWriteFail(int failLogsCount);
     
