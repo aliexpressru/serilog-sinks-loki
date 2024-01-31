@@ -8,6 +8,7 @@ There is a full description of section that is needed in appsettings.json.
 ```
 {
     "Loki": {
+         "Disabled": false,
          "AppName": "app-name",
          "TenantId: "admin",
          "Labels": {
@@ -76,10 +77,11 @@ There is a full description of section that is needed in appsettings.json.
 - `UseInternalTimestamp` (default = false) - if `true` use internalTimestamp from log
 - `LeavePropertiesIntact` (default = false) - if `true` logger remove not-labeled properties from logEvent, so formatter select only PropertiesAsLabels
 - `SkipReqResWithHeaders` (default = null) - list of headers which should be ignored during logging
-
+- `Disabled` (default = null) - if true, then turn off direct to loki logging
 ```
 {
     "Loki": {
+         "Disabled": false,
          "TenantId: "admin",
          "SuppressProperties": [
             "EventId",
