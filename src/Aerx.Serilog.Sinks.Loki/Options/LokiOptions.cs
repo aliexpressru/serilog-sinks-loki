@@ -2,6 +2,8 @@
 
 public class LokiOptions
 {
+    public bool? Disabled { get; set; }
+    
     public string AppName { get; set; }
     
     public string TenantId { get; set; }

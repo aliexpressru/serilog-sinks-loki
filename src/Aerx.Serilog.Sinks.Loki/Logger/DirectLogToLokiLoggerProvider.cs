@@ -4,6 +4,7 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
+using Serilog.Formatting;
 using Serilog.Sinks.SystemConsole.Themes;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -13,13 +14,16 @@ internal class DirectLogToLokiLoggerProvider : ILoggerProvider
 {
     private readonly ILogEventEnricher[] _enrichers;
     private readonly LokiSink _lokiSink;
+    private readonly ITextFormatter _consoleTextFormatter;
 
     public DirectLogToLokiLoggerProvider(
         IEnumerable<ILogEventEnricher> enrichers,
-        LokiSink lokiSink)
+        LokiSink lokiSink, 
+        ITextFormatter consoleTextFormatter = null)
     {
         _enrichers = enrichers.ToArray();
         _lokiSink = lokiSink;
+        _consoleTextFormatter = consoleTextFormatter;
     }
 
     public ILogger CreateLogger(string categoryName)
@@ -50,6 +54,11 @@ internal class DirectLogToLokiLoggerProvider : ILoggerProvider
             serilogConfig.WriteTo.Async(x => x.Console(theme: theme));
         }
 
+        if (_consoleTextFormatter != null)
+        {
+            serilogConfig.WriteTo.Async(x => x.Console(_consoleTextFormatter));
+        }
+        
         serilogConfig.WriteTo.Sink(_lokiSink, LevelAlias.Minimum);
 
         logger = serilogConfig.CreateLogger();

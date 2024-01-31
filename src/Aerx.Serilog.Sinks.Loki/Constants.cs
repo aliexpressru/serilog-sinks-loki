@@ -12,6 +12,8 @@ internal static class Constants
     
     internal const string AppName = nameof(AppName);
     
+    internal const string Disabled = nameof(Disabled);
+    
     internal const string TenantId = nameof(TenantId);
     
     internal const string Labels = nameof(Labels);

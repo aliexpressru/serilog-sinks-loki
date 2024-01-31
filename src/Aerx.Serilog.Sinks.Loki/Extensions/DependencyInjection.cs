@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenTelemetry.Metrics;
+using Serilog.Core;
 using Serilog.Formatting;
 using Serilog.Formatting.Json;
 
@@ -31,7 +32,7 @@ public static class DependencyInjection
     ///         "another_prop"
     ///     ]
     /// }
-    ///
+    /// 
     /// If you want to turn on metrics to export, set 
     /// "EnableMetrics": true,
     /// "Metrics": {
@@ -46,14 +47,16 @@ public static class DependencyInjection
     /// 
     /// Also need to configure http client for direct to loki push
     /// services.AddHttpClient<ILokiHttpClient, LokiGzipHttpClient>(c => c.BaseAddress = new Uri("http://your-domain-loki.net"))
-    ///
+    /// 
     /// </summary>
     /// <param name="services">ServiceCollection</param>
     /// <param name="configuration">IConfiguration</param>
     /// <param name="configureHttp">Configuration of httpClient</param>
+    /// <param name="consoleFormatter">Default console formatter</param>
     public static IServiceCollection AddDirectToLokiLogging(this IServiceCollection services,
         IConfiguration configuration,
-        Action<IServiceCollection> configureHttp)
+        Action<IServiceCollection> configureHttp,
+        ITextFormatter consoleFormatter = null)
     {
         if (services == null)
         {
@@ -72,14 +75,15 @@ public static class DependencyInjection
         
         configureHttp(services);
 
-        services.AddLogging(b => b.ClearProviders().SetMinimumLevel(LogLevel.Trace));
-
         services.TryAddSingleton(x => new JsonValueFormatter(Constants.TypeTagName));
         services.TryAddSingleton<ITextFormatter, LokiMessageFormatter>();
         services.TryAddSingleton<ILokiBatchFormatter, LokiBatchFormatter>();
         services.TryAddSingleton<LokiHttpClientPooledObjectPolicy>();
         services.TryAddSingleton<LokiSink>();
-        services.TryAddSingleton<ILoggerProvider, DirectLogToLokiLoggerProvider>();
+        services.TryAddSingleton<ILoggerProvider>(sp => new DirectLogToLokiLoggerProvider(
+                sp.GetServices<ILogEventEnricher>(),
+                sp.GetRequiredService<LokiSink>(),
+                consoleFormatter));
         services.TryAddSingleton<IMeterService, MeterService>();
         
         return services;
@@ -92,7 +96,7 @@ public static class DependencyInjection
     /// <returns></returns>
     public static MeterProviderBuilder AddDirectLokiLoggingMeter(this MeterProviderBuilder builder) => 
         builder.AddMeter(MeterService.MeterName);
-    
+
     /// <summary>
     /// Add direct to loki logging
     /// Required properties in configuration
@@ -106,7 +110,7 @@ public static class DependencyInjection
     ///         "another_prop"
     ///     ]
     /// }
-    ///
+    /// 
     /// If you want to turn on metrics to export, set 
     /// "EnableMetrics": true,
     /// "Metrics": {
@@ -119,18 +123,22 @@ public static class DependencyInjection
     /// 
     /// "Metrics" section is optional. The default values are listed above.
     /// Also need to configure http client for direct to loki push like an action delegate&
-    ///
+    /// 
     /// </summary>
     /// <param name="services">ServiceCollection</param>
     /// <param name="configuration">IConfiguration</param>
     /// <param name="httpClientConfiguration">Configuration of httpClient</param>
+    /// <param name="consoleFormatter">Default console formatter</param>
     /// <returns></returns>
     public static IServiceCollection AddDirectToLokiLogging(this IServiceCollection services,
         IConfiguration configuration,
-        Action<System.Net.Http.HttpClient> httpClientConfiguration)
+        Action<System.Net.Http.HttpClient> httpClientConfiguration,
+        ITextFormatter consoleFormatter = null)
     {
-        return AddDirectToLokiLogging(services, configuration, s =>
-            s.AddHttpClient<ILokiHttpClient, LokiGzipHttpClient>(httpClientConfiguration));
+        return AddDirectToLokiLogging(services, 
+            configuration, 
+            s => s.AddHttpClient<ILokiHttpClient, LokiGzipHttpClient>(httpClientConfiguration),
+            consoleFormatter);
     }
 
     /// <summary>
@@ -172,6 +180,12 @@ public static class DependencyInjection
     {
         var lokiSection = configuration.GetSection(Constants.Loki);
         if (!lokiSection.Exists())
+        {
+            return false;
+        }
+
+        var disabled = lokiSection.GetValue<bool?>(Constants.Disabled);
+        if (disabled.HasValue && disabled.Value)
         {
             return false;
         }
