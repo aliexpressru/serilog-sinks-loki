@@ -75,6 +75,7 @@ public static class DependencyInjection
         
         configureHttp(services);
 
+        services.AddLogging(b => b.ClearProviders().SetMinimumLevel(LogLevel.Trace));
         services.TryAddSingleton(x => new JsonValueFormatter(Constants.TypeTagName));
         services.TryAddSingleton<ITextFormatter, LokiMessageFormatter>();
         services.TryAddSingleton<ILokiBatchFormatter, LokiBatchFormatter>();
